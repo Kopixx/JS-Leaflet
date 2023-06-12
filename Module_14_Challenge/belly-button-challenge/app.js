@@ -5,29 +5,25 @@ let queryUrl = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classro
 d3.json(queryUrl).then(function(data) {
     console.log(data)
 
-    let sampleData = data.names;
+    let sampleNames = data.names;
 
     let dropMenu = d3.select("#selDataset");
 
-    for (let i=0; i < sampleData.length; i++) {
-        dropMenu.append("option").text(sampleData[i]).property("value", sampleData[i])
+    for (let i=0; i < sampleNames.length; i++) {
+        dropMenu.append("option").text(sampleNames[i]).property("value", sampleNames[i])
     };
 
-    buildChart(sampleData[0]);
+    buildChart(sampleNames[0]);
 
-    buildMetaData(sampleData[0]);
+    buildMetaData(sampleNames[0]);
 
 });
 
 
 
-
-
-
-
-
 // Define optionChanged function
 function optionChanged(newsample) {
+    
     buildChart(newsample);
 
     buildMetaData(newsample);
@@ -37,6 +33,54 @@ function optionChanged(newsample) {
 function buildChart(sampleID){
     d3.json(queryUrl).then(function(data) {
 
+        //Retrieve the sample data
+        for (let i=0; i < data.names.length; i++) {
+            if (sampleID == data.samples[i].id) {
+                //Save the sample
+                let sampleData = data.samples[i];
+
+                //Convert the Y values to string
+                let y_values_bar = [];
+
+                for (let j=0; j < 10; j++) {
+                    y_values_bar.push("OTU " + String(sampleData.otu_ids[j]))
+                };
+
+                //Declare the trace, obtaining Top 10 Values
+                let trace_bar = {
+                    x: sampleData.sample_values.slice(0,10).reverse(),
+                    y: y_values_bar.reverse(),
+                    type: 'bar',
+                    orientation: 'h'
+                };
+                
+                console.log(trace_bar.x, trace_bar.y);
+
+                //Save trace array
+                let trace_bar_array = [trace_bar];
+
+                //Create plot
+                Plotly.newPlot("bar", trace_bar_array);
+
+                //Bubble Chart data values
+                let y_values_bubble = []
+
+                for (let j=0; j < sampleData.sample_values.length; j++) {
+                    y_values_bubble.push(sampleData.otu_ids[j])
+                };
+
+                let trace_bubble = {
+                    x: sampleData.sample_values,
+                    y: y_values_bubble,
+                    mode: 'markers',
+                    marker: {
+                        color: y_values_bubble,
+                        size: sampleData.sample_values
+                    }   
+                }
+            }
+
+        }
 
     })
 };
